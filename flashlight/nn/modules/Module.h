@@ -22,8 +22,13 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 namespace fl {
+
+typedef std::unordered_map<std::string, Variable> StateDict;
+// Or maybe recursive? map<string, variant<map, Variable>>
+// Would be better for Container modules (but we can also flatten everything)
 
 /**
  * An abstract computation unit capable of forward computation. Also
@@ -42,7 +47,7 @@ class Module {
    * Parameters of module, represented as a collection of `Variable`, whose
    * ordering is based on the implementation of the respective module.
    */
-  std::vector<Variable> params_;
+  std::vector<std::pair<std::string /* param name */, Variable>> params_;
 
   /**
    * A flag specifying whether or not the module is in `train` mode. If
@@ -62,6 +67,7 @@ class Module {
    * @param params a vector of `Variable` which will replace `params_`
    */
   explicit Module(const std::vector<Variable>& params);
+  explicit Module(const std::vector<std::pair<std::string, Variable>>& params);
 
  public:
   /**
@@ -90,6 +96,7 @@ class Module {
    * @return a `Variable` tensor for the parameter at the requested position
    */
   Variable param(int position) const;
+  std::pair<std::string, Variable> paramNamed(int position) const;
 
   /**
    * Sets a parameter at a specified position with a new, given one.
@@ -103,6 +110,9 @@ class Module {
    * `params_`
    */
   virtual void setParams(const Variable& var, int position);
+
+  void loadStateDict(StateDict const& sd);
+  StateDict stateDict() const;
 
   /**
    * Clears references to gradient Variables for all parameters in the module.

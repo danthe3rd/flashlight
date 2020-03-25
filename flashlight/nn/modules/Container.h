@@ -45,7 +45,7 @@ class Container : public Module {
   /**
    * A collection of modules contained within a `Container`.
    */
-  std::vector<ModulePtr> modules_;
+  std::vector<std::pair<std::string /* module name */, ModulePtr>> modules_;
 
   Container();
 
@@ -68,15 +68,22 @@ class Container : public Module {
    * @param module the module to add.
    */
   template <typename T>
-  void add(std::shared_ptr<T> module) {
+  void add(std::shared_ptr<T> module, std::string const& name) {
+    // TODO: Assert that there is no other module with this name
     if (!module) {
       throw std::invalid_argument("can't add null Module to Container");
     }
-    modules_.emplace_back(module);
+    modules_.emplace_back({name, module});
     for (int i = 0; i < module->params().size(); i++) {
       childParamIdx_[params_.size()] = std::make_tuple(modules_.size() - 1, i);
-      params_.push_back(module->param(i));
+      auto pn = module->paramNamed(i);
+      pn.first = name + "." + pn.first;
+      params_.push_back(pn);
     }
+  }
+  template <typename T>
+  void add(std::shared_ptr<T> module) {
+    add(module, std::to_string(modules_.size()));
   }
 
   /**
