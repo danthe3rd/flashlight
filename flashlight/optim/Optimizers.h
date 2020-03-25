@@ -24,6 +24,10 @@
 
 namespace fl {
 
+// Does it make sense to have a common abstraction between `Module` and optimizers?
+// Optimizers and Modules both have parameters, can be serialized, have a `prettyString`, have a state_dict...
+// The only thing is that Optimizers don't have `train`/`eval`/`forward`/`backward`
+
 /** An abstract base class for first-order gradient-based optimizers. Any
  * derived class must implement the step() function.
  * Example usage:
